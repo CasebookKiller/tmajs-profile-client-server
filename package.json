@@ -1,0 +1,19 @@
+{
+  "name": "client-server-template",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "dev:client": "npm --prefix ./client run dev",
+    "build:client": "npm --prefix ./client run build",
+    "lint:client": "npm --prefix ./client run lint",
+    "preview:client": "npm --prefix ./client run preview",
+    "test:server": "npm --prefix ./server run test",
+    "build:server": "npm --prefix ./server run build",
+    "start:server": "npm --prefix ./server run start",
+    "server": "npm --prefix ./server run server",
+    "dev:all": "concurrently \"npm --prefix ./server run start\" \"npm --prefix ./client run dev\""
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}
