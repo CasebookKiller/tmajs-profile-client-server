@@ -11,9 +11,13 @@ export default SBase;
 export interface TGID {
   created_at: string;
   id: number;
-  tgbro: string | null;
   tgid: string;
   username: string | null;
+  tgbro: string | null;
+  avatar: string | null;
+  firstname?: string | null;
+  lastname?: string | null;
+  bio?: string | null;
 }
 
 export interface TUser {
@@ -23,6 +27,8 @@ export interface TUser {
   last_token: string | null;
   password: string;
   username: string;
+  tgid: string | null; // id telegram
+  human?: () => void;
 }
 
 /**
@@ -39,8 +45,22 @@ export async function requestTUser(email: string) {
   return result.data;  
 }
 
+/**
+ * Запрос пользователя из БД по tgid  
+ * @param tgid
+ * @returns
+ */
+export async function requestTUserByTGId(tgid: string) {
+  const result: PostgrestSingleResponse<TUser[]> = await SBase
+    .from('tusers')
+    .select('*') //все строки
+    .eq('tgid', tgid); //отобрать по email
+    //.lt('id', 20); //первые 20 записей
+  return result.data;  
+}
+
 console.log('=== SUPABASE TESTS (start) ===')
-async function getIds() {
+export async function getIds() {
   const result: PostgrestSingleResponse<TGID[]> = await SBase
     .from('ids')
     .select()
@@ -50,7 +70,17 @@ async function getIds() {
   return result.data;
 }
 
-async function getTUsers(count?: number) {
+// запрос по идентификатору пользователя Telegram
+export async function getRow(tgid: string) {
+  console.log('%ctgid: %o', `color: firebrick; background-color: white`, tgid);
+  const result: PostgrestSingleResponse<TGID[]> = await SBase
+    .from('ids')
+    .select('*')
+    .eq('tgid', tgid);
+  return result.data;
+}
+
+export async function getTUsers(count?: number) {
   const result: PostgrestSingleResponse<TUser[]> = count ? 
     await SBase.from('tusers').select('*').lt('id', count + 1).order('id', { ascending: true }) :
     await SBase.from('tusers').select('*').order('id', { ascending: true });
@@ -69,7 +99,7 @@ async function getTUsers(count?: number) {
 
 //const users = getTUsers(4).then(response => console.log('%ctusers: %o', `color: firebrick; background-color: white`, response.data));
  
-async function checkEmail(email: string) {
+export async function checkEmail(email: string) {
   let { data, error } = await SBase
     .from('tusers')
     .select("*")
@@ -89,16 +119,29 @@ async function checkEmail(email: string) {
 
 //const checked = checkEmail('ll@me.com').then(data => console.log('checked: ', data));
 
-async function upsertTUser(username: string, email: string, password: string) {
+export async function upsertTUser(
+  username: string,
+  email: string,
+  password: string,
+  token?: string,
+  tgid?: string
+) {
   const user = {
     email,
     password,
-    username
+    username,
+    last_token: token,
+    tgid
   }
   
   const { data, error } = await SBase
     .from('tusers')
-    .upsert(user);
+    .upsert(user)
+    .eq('email', email)
+    .select();
+
+  console.log('%cdata: %o', `color: firebrick; background-color: white`, data);
+  console.log('%cerror: %o', `color: firebrick; background-color: white`, error);
 
   return { data, error };
 }
@@ -147,11 +190,17 @@ export async function testSBase() {
 //testSBase();
 console.log('=== SUPABASE TESTS (end) ===')
 
-async function insertTUser(username: string, email: string, password: string, token?: string) {
+export async function insertTUser(
+  username: string,
+  email: string,
+  password?: string,
+  token?: string,
+  tgid?: string | null
+) {
   const { data, error } = await SBase
     .from('tusers')
     .insert([
-      { username: username, email: email, password: password, last_token: token },
+      { username: username, email: email, password: password || '', last_token: token, tgid },
     ])
     .select();
 
@@ -159,6 +208,14 @@ async function insertTUser(username: string, email: string, password: string, to
 }
 
 //insertTUser('YY','YY@ever.com','223322').then(data => console.log(data));
+
+export async function allTUser() {
+  const { data: tusers, error } = await SBase
+  .from('tusers')
+  .select('*');
+
+  return { tusers, error };
+}
 
 /*
 Columns
@@ -171,6 +228,7 @@ email	      text                      string
 username	  text                      string	
 password	  text                      string	
 last_token	text                      string
+tgid	      text                      string
 */
 
 
@@ -193,8 +251,18 @@ curl 'https://iuphyivpecgbyturcskh.supabase.co/rest/v1/tusers?select=*' \
 -H "apikey: SUPABASE_CLIENT_ANON_KEY" \
 -H "Authorization: Bearer SUPABASE_CLIENT_ANON_KEY"
 ```
+*/
 
+export async function selectTUser(select: string = '*') {
+  'created_at,email,id,last_token,password,username,tgid';
+  const { data: tusers, error } = await SBase
+  .from('tusers')
+  .select(select);
 
+  return { tusers, error };
+}
+
+/*
 Read specific columns (чтение конкретных колонок)
 
 ```javascript
@@ -208,8 +276,9 @@ curl 'https://iuphyivpecgbyturcskh.supabase.co/rest/v1/tusers?select=some_column
 -H "apikey: SUPABASE_CLIENT_ANON_KEY" \
 -H "Authorization: Bearer SUPABASE_CLIENT_ANON_KEY"
 ```
+*/
 
-
+/*
 Read referenced tables (чтение связанных таблиц)
 
 ```javascript
@@ -228,8 +297,9 @@ curl 'https://iuphyivpecgbyturcskh.supabase.co/rest/v1/tusers?select=some_column
 -H "apikey: SUPABASE_CLIENT_ANON_KEY" \
 -H "Authorization: Bearer SUPABASE_CLIENT_ANON_KEY"
 ```
+*/
 
-
+/*
 With pagination (с пагинацией)
 
 ```javascript
@@ -245,8 +315,9 @@ curl 'https://iuphyivpecgbyturcskh.supabase.co/rest/v1/tusers?select=*' \
 -H "Authorization: Bearer SUPABASE_CLIENT_ANON_KEY" \
 -H "Range: 0-9"
 ```
+*/
 
-
+/*
 Filtering (фильтрация)
 ----------------------
 Supabase provides a wide range of filters
@@ -278,7 +349,7 @@ let { data: tusers, error } = await supabase
   // Logical operators
   .not('column', 'like', 'Negate filter')
   .or('some_column.eq.Some value, other_column.eq.Other value')
-          
+
 ```
 
 ```bash
@@ -308,8 +379,9 @@ curl --get 'https://iuphyivpecgbyturcskh.supabase.co/rest/v1/tusers' \
 -d "column=not.like.Negate+filter" \
 -d "or=(some_column.eq.Some+value,other_column.eq.Other+value)"
 ```
+*/
 
-
+/*
 Insert rows (вставка строк)
 ---------------------------
 insert lets you insert into your tables. You can also insert in bulk and do UPSERT.
@@ -336,8 +408,9 @@ curl -X POST 'https://iuphyivpecgbyturcskh.supabase.co/rest/v1/tusers' \
 -H "Prefer: return=minimal" \
 -d '{ "some_column": "someValue", "other_column": "otherValue" }'
 ```
+*/
 
-
+/*
 Insert many rows (вставка нескольких строк)
 
 ```javascript
@@ -357,8 +430,9 @@ curl -X POST 'https://iuphyivpecgbyturcskh.supabase.co/rest/v1/tusers' \
 -H "Content-Type: application/json" \
 -d '[{ "some_column": "someValue" }, { "other_column": "otherValue" }]'
 ```
+*/
 
-
+/*
 Upsert matching rows (обновление существующих строк)
 
 ```javascript
@@ -376,8 +450,37 @@ curl -X POST 'https://iuphyivpecgbyturcskh.supabase.co/rest/v1/tusers' \
 -H "Prefer: resolution=merge-duplicates" \
 -d '{ "some_column": "someValue", "other_column": "otherValue" }'
 ```
+*/
 
 
+export async function updateTUser(
+  id: number,
+  created_at: string,
+  name: string,
+  email: string,
+  password: string,
+  token?: string,
+  tgid?: string
+) {
+  const user: TUser = {
+    id: id,
+    created_at: created_at,
+    username: name,
+    email: email,
+    password: password,
+    last_token: token || '',
+    tgid: tgid || ''
+  }
+  const { data, error } = await SBase
+    .from('tusers')
+    .update(user)
+    .eq('email', user.email)
+    .select();
+
+  return { data, error };
+}
+
+/*
 Update rows (обновление строк)
 ------------------------------
 update lets you update rows. update will match all rows by default. You can update specific rows using horizontal filters, e.g. eq, lt, and is.
@@ -403,8 +506,9 @@ curl -X PATCH 'https://iuphyivpecgbyturcskh.supabase.co/rest/v1/tusers?some_colu
 -H "Prefer: return=minimal" \
 -d '{ "other_column": "otherValue" }'
 ```
+*/
 
-
+/*
 Delete rows (удаление строк)
 ----------------------------
 delete lets you delete rows. delete will match all rows by default, so remember to specify your filters!
@@ -424,8 +528,9 @@ curl -X DELETE 'https://iuphyivpecgbyturcskh.supabase.co/rest/v1/tusers?some_col
 -H "apikey: SUPABASE_CLIENT_ANON_KEY" \
 -H "Authorization: Bearer SUPABASE_CLIENT_ANON_KEY"
 ```
+*/
 
-
+/*
 Subscribe to changes (подписка на изменения)
 -------------------
 Supabase provides realtime functionality and broadcasts database changes to authorized users depending on Row Level Security (RLS) policies.
@@ -510,6 +615,7 @@ Javascript Client Library
 https://supabase.com/docs/reference/javascript/select
 
 */
+
 /*
 заполняем таблицу пользователей
 

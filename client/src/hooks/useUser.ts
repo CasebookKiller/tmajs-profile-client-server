@@ -1,6 +1,6 @@
-import { useContext } from "react";
-import { UserContext, type User } from "../context/UserContext";
-import { useLocalStorage } from "./useLocalStorage";
+import { useContext } from 'react';
+import { UserContext, type User } from '../context/UserContext';
+import { useLocalStorage } from './useLocalStorage';
 
 export const useUser = () => {
   const { user, setUser, loginVisible, setLoginVisible } = useContext(UserContext);
@@ -9,13 +9,13 @@ export const useUser = () => {
   const addUser = (user: User) => {
     setUser(user);
     setLoginVisible(false);
-    setItem("user", JSON.stringify(user));
+    setItem('user', JSON.stringify(user));
   };
 
   const removeUser = () => {
     setUser(null);
     setLoginVisible(true);
-    setItem("user", "");
+    setItem('user', '');
   };
 
   return { user, addUser, removeUser, setUser, loginVisible, setLoginVisible };

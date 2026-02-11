@@ -1,11 +1,12 @@
-import { createContext, type Dispatch, type SetStateAction } from "react";
+import { createContext, type Dispatch, type SetStateAction } from 'react';
 
 export type User = {
   id: number,
   name: string,
   email: string,
   password?: string,
-  token?: string
+  token?: string,
+  avatar?: string,
 }
 
 interface UserContextType {

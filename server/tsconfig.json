@@ -113,15 +113,17 @@
 //}
 {
   "compilerOptions": {
-    "target": "es2016",
+    "target": "es2018", // +
     "jsx": "preserve",
-    "module": "commonjs",
+    "module": "commonjs", // +
+    "declaration": true, // added
+    "removeComments": true, // added
     "allowJs": true,
-    "outDir": "./dist",
-    "esModuleInterop": true,
+    "outDir": "./dist", // +
+    "esModuleInterop": true, // +
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
-    "strict": true,
+    "strict": true, // +
     "skipLibCheck": true
   },
   "exclude": [

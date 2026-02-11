@@ -1,15 +1,15 @@
-import { useEffect } from "react";
-import { useUser } from "./useUser";
-import { useLocalStorage } from "./useLocalStorage";
-import type { User } from "../context/UserContext";
+import { useEffect } from 'react';
+import { useUser } from './useUser';
+import { useLocalStorage } from './useLocalStorage';
+import type { User } from '../context/UserContext';
 
 export const useAuth = () => {
-  // we can re export the user methods or object from this hook
+  // мы можем повторно экспортировать пользовательские методы или объекты из этого хука
   const { user, addUser, removeUser, setUser, loginVisible, setLoginVisible } = useUser();
   const { getItem } = useLocalStorage();
 
   useEffect(() => {
-    const user = getItem("user");
+    const user = getItem('user');
     if (user) {
       addUser(JSON.parse(user));
     }

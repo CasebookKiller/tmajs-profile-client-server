@@ -46,6 +46,10 @@ export type Database = {
           tgbro: string | null
           tgid: string
           username: string | null
+          avatar: string | null
+          firstname: string | null
+          lastname: string | null
+          bio: string | null
         }
         Insert: {
           created_at?: string
@@ -53,13 +57,21 @@ export type Database = {
           tgbro?: string | null
           tgid: string
           username?: string | null
+          avatar?: string | null
+          firstname?: string | null
+          lastname?: string | null
+          bio?: string | null
         }
         Update: {
           created_at?: string
           id?: never
           tgbro?: string | null
-          tgid?: string
+          tgid: string
           username?: string | null
+          avatar?: string | null
+          firstname?: string | null
+          lastname?: string | null
+          bio?: string | null
         }
         Relationships: []
       }
@@ -71,6 +83,7 @@ export type Database = {
           last_token: string | null
           password: string
           username: string
+          tgid: string | null
         }
         Insert: {
           created_at?: string
@@ -79,6 +92,7 @@ export type Database = {
           last_token?: string | null
           password: string
           username: string
+          tgid?: string | null
         }
         Update: {
           created_at?: string
@@ -87,6 +101,7 @@ export type Database = {
           last_token?: string | null
           password?: string
           username?: string
+          tgid?: string | null
         }
         Relationships: []
       }

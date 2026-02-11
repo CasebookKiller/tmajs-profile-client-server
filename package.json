@@ -1,8 +1,11 @@
 {
-  "name": "client-server-template",
+  "name": "tmajs-profile-client-server",
   "version": "1.0.0",
   "description": "",
   "scripts": {
+    "dev:profile": "npm --prefix ./profile run dev",
+    "build:profile": "npm --prefix ./profile run build",
+    "deploy:profile": "npm --prefix ./profile run deploy",
     "dev:client": "npm --prefix ./client run dev",
     "build:client": "npm --prefix ./client run build",
     "lint:client": "npm --prefix ./client run lint",
@@ -15,5 +18,8 @@
   },
   "devDependencies": {
     "concurrently": "^9.2.1"
+  },
+  "dependencies": {
+    "react-hook-form": "^7.67.0"
   }
 }
